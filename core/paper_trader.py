@@ -167,6 +167,23 @@ class PaperTrader:
                     outcome_label: str, edge: float = 0,
                     confidence: float = 0.8) -> Position:
         """Direct fill at mid price — simplified for paper trading."""
+        # Guard: skip if already have open position for this market
+        for pos in self.positions:
+            if pos.market_slug == market_slug and not pos.resolved:
+                log.info("[%s] skipping %s — already have open position for %s",
+                         strategy, side, market_slug)
+                return Position(
+                    position_id="skipped",
+                    strategy=strategy,
+                    market_slug=market_slug,
+                    token_id=token_id,
+                    outcome=outcome_label,
+                    side=side.upper(),
+                    price=price,
+                    size=0,
+                    timestamp=datetime.now(timezone.utc).timestamp(),
+                )
+
         if side == "BUY":
             fill_price = price * (1 + self.cfg.slippage_buy)
             self.bankroll -= fill_price * size

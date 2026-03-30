@@ -69,7 +69,9 @@ class BaseStrategy(ABC):
                     edge=sig.edge,
                     confidence=sig.confidence,
                 )
-                filled.append(pos)
+                # Skip phantom fills (already have position)
+                if pos.position_id != "skipped":
+                    filled.append(pos)
             elif sig.signal_type == "close":
                 pass  # resolve logic handled separately
         return filled

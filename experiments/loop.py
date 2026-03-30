@@ -89,59 +89,18 @@ class AutoresearchLoop:
         self.evaluator = Evaluator()
         self.conn = _ensure_db()
 
-        # Build strategies
+        # Build strategies with base cfg — they inherit field defaults from it
         self.strategies = {
-            "arb_scanner": ArbScanner(self.trader, self._arb_cfg()),
-            "crypto_threshold": CryptoThreshold(self.trader, self._ct_cfg()),
-            "calibration_bias": CalibrationBias(self.trader, self._cb_cfg()),
-            "news_agent": NewsAgent(self.trader, self._na_cfg()),
-            "whale_follow": WhaleFollow(self.trader, self._wf_cfg()),
-            "flash_crash": FlashCrash(self.trader, self._fc_cfg()),
+            "arb_scanner": ArbScanner(self.trader, cfg),
+            "crypto_threshold": CryptoThreshold(self.trader, cfg),
+            "calibration_bias": CalibrationBias(self.trader, cfg),
+            "news_agent": NewsAgent(self.trader, cfg),
+            "whale_follow": WhaleFollow(self.trader, cfg),
+            "flash_crash": FlashCrash(self.trader, cfg),
         }
 
         self.state = _load_state()
         self.exp_state = ExperimentState()
-
-    # Config accessors
-    def _arb_cfg(self) -> ArbScannerConfig:
-        return ArbScannerConfig(
-            enabled=self.strategies["arb_scanner"].enabled,
-            min_edge=self.cfg.min_edge,
-            min_volume=self.cfg.min_volume,
-        )
-
-    def _ct_cfg(self) -> CryptoThresholdConfig:
-        return CryptoThresholdConfig(
-            enabled=self.strategies["crypto_threshold"].enabled,
-            min_edge=self.cfg.min_edge,
-            min_volume=self.cfg.min_volume,
-        )
-
-    def _cb_cfg(self) -> CalibrationBiasConfig:
-        return CalibrationBiasConfig(
-            enabled=self.strategies["calibration_bias"].enabled,
-            min_bias_edge=0.05,
-        )
-
-    def _na_cfg(self) -> NewsAgentConfig:
-        return NewsAgentConfig(
-            enabled=self.strategies["news_agent"].enabled,
-            min_price_move=0.05,
-            min_volume=25_000.0,
-        )
-
-    def _wf_cfg(self) -> WhaleFollowConfig:
-        return WhaleFollowConfig(
-            enabled=self.strategies["whale_follow"].enabled,
-            min_follow_size=100.0,
-            min_repeat_count=3,
-        )
-
-    def _fc_cfg(self) -> FlashCrashConfig:
-        return FlashCrashConfig(
-            enabled=self.strategies["flash_crash"].enabled,
-            drop_threshold=0.30,
-        )
 
     def _composite_score(self) -> float:
         """Primary metric to beat — composite of sharpe, win_rate, calibration."""
